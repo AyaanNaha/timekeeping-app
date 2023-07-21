@@ -49,20 +49,41 @@ export default class Schedule extends Component {
 
     componentDidMount() {
         for (var i = 0; i < 24; i++) {
-            this.state.data.push({id: i, title: "title", time: i + 1 + " O clock", description: "description"});
+            if(i < 8 || i > 18) {
+                this.state.data.push({id: i, info:{}})
+            } else {
+                this.state.data.push({
+                    id: i, 
+                    info: {
+                        title: "Coding Class", 
+                        time: i + 1 + ":00 - " + (i+2) + ":00", 
+                        description: "Learn coding yayaya", 
+                        color:"magenta"
+                    }
+                });
+            }
         }
-        console.log(this.state.data)
     }
 
     renderItem = ({item: event}) => {
-        return (
-            <View style={styles.cardContainer}>
-                <Text>{event.id + 1 > 12 ? event.id + 1 - 12 + " PM" : event.id + 1 + " AM"}</Text>
-                <View style={styles.card}>
-                 <EventCard event={event} navigation={this.props.navigation}></EventCard>
+        if(!event.info.title) {
+            console.log("nuttn in event.info")
+            return (
+                <View style={styles.cardContainer}>
+                    <Text style={styles.time}>{event.id + 1 > 12 ? event.id + 1 - 12 + " PM" : event.id + 1 + " AM"}</Text>
+                    <View style={[styles.card, {paddingVertical:25}]}></View>
                 </View>
-            </View>
-        )
+            )
+        } else {
+            return (
+                <View style={styles.cardContainer}>
+                    <Text style={styles.time}>{event.id + 1 > 12 ? event.id + 1 - 12 + " PM" : event.id + 1 + " AM"}</Text>
+                    <View style={styles.card}>
+                    <EventCard event={event} navigation={this.props.navigation}></EventCard>
+                    </View>
+                </View>
+            )
+        }
     }
 
     keyExtractor = (item, index) => index.toString();
@@ -94,9 +115,13 @@ const styles = StyleSheet.create({
         marginRight:10
     },
     card:{    
-        marginLeft: 5,  
         borderWidth:2,
         borderColor:"black",
-        padding: 10,
-    }
+        borderTopWidth:1,
+        borderBottomWidth:1,
+        width:"85%",
+        padding:10,
+        
+    },
+    time:{marginTop:-8, marginRight:5}
 })
