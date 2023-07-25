@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
+import { View, Text, Switch, StyleSheet } from "react-native";
 
 const lightColors = {
     red:"rgba(255,0,0,0.5)",
@@ -19,42 +19,30 @@ const colors = {
     magenta:"rgb(230,0,230)"
 };
 
-export default class EventCard extends Component {
-    constructor() {
-        super();
-        this.state = {}
-    }
+export default class EventScreen extends Component {
 
     componentDidMount() {
-        // console.log(this.props)
+        console.log(this.props);
     }
 
-    renderItem = ({item: info}) => {
+    render() {
+        let info = this.props.route.params;
+
         return (
-        <TouchableOpacity style={styles.container} onPress={() => this.props.navigation.navigate("EventScreen", info)}>
+        <View style={styles.container}>
             <View style={[styles.boundaryBox, {backgroundColor:lightColors[info.color]}]}>
                 <View style={[styles.titleBox, {backgroundColor:colors[info.color]}]}>
                     <Text style={styles.title}>{info.title}</Text>
                     <Text style={styles.time}>{info.time}</Text>
                 </View>
+
+                <View style={styles.switchContainer}>
+                    <Switch></Switch>
+                    <Text>Mark As Complete</Text>
+                </View>
                 <Text style={styles.description}>{info.description}</Text>
             </View>
-        </TouchableOpacity>
-        )
-    }
-
-    keyExtractor = (item, index) => index.toString();
-
-    render() {
-        let info = this.props.event
-
-        return (
-            <FlatList 
-            data={info}
-            renderItem={this.renderItem}
-            keyExtractor={this.keyExtractor}
-           />
-
+        </View>
         )
     }
 }
@@ -63,7 +51,12 @@ const styles = StyleSheet.create({
     container:{
         flex:1,
         margin:5,
-        width:280
+        width:"95%",
+        justifyContent:"center",
+
+    },
+    switchContainer:{
+        flexDirection:"row"
     },
     boundaryBox:{
         // opacity:0.5,

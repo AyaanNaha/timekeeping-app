@@ -2,42 +2,6 @@ import React, {Component} from "react";
 import { View, Text, ScrollView, FlatList, StyleSheet } from "react-native";
 import EventCard from "./EventCard";
 
-const DATA = [
-    {
-        title:"Do homework",
-        time:"1:00 PM - 2:00 PM",
-        description:"Finish homework for school",
-        id: 0
-    },
-    {
-        title:"Do dishes",
-        time:"2:00 PM - 3:00 PM",
-        description:"put in dishwasher",
-        id: 1
-    },
-    {
-        title:"sleep",
-        time:"3:00 PM - 4:00 PM",
-        description:"naptime",
-        id: 2
-    },
-    {},{},{},{},{},{},{},{},{},{},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {        
-    title:"sleep more",
-    time:"3:00 PM - 4:00 PM",
-    description:"naptime",
-    id: 21},
-    {},
-    {},
-    {},
-]
 
 export default class Schedule extends Component {
     constructor() {
@@ -49,25 +13,37 @@ export default class Schedule extends Component {
 
     componentDidMount() {
         for (var i = 0; i < 24; i++) {
-            if(i < 8 || i > 18) {
-                this.state.data.push({id: i, info:{}})
-            } else {
-                this.state.data.push({
-                    id: i, 
-                    info: {
-                        title: "Coding Class", 
-                        time: i + 1 + ":00 - " + (i+2) + ":00", 
-                        description: "Learn coding yayaya", 
-                        color:"magenta"
-                    }
-                });
-            }
+            // if(i < 8 || i > 18) {
+                this.state.data.push({id: i, info:[]})
+            // } else {
+            //     this.state.data.push({
+            //         id: i, 
+            //         info: {
+            //             title: "Coding Class", 
+            //             time: i + 1 + ":00 - " + (i+2) + ":00", 
+            //             description: "Learn coding yayaya", 
+            //             color:"magenta"
+            //         }
+            //     });
+            // }
         }
+
+        this.state.data[12].info = [{
+            title:"Coding class",
+            time: "1:00-1:30",
+            description: "Learn codeing at byjus future school its great for you trust",
+            color:"red"
+        },{
+            title:"Relax class",
+            time: "1:30-2:00",
+            description: "sleepy sleepy",
+            color:"cyan"
+        }]
+
     }
 
     renderItem = ({item: event}) => {
-        if(!event.info.title) {
-            console.log("nuttn in event.info")
+        if(!event.info[0]) {
             return (
                 <View style={styles.cardContainer}>
                     <Text style={styles.time}>{event.id + 1 > 12 ? event.id + 1 - 12 + " PM" : event.id + 1 + " AM"}</Text>
@@ -75,11 +51,12 @@ export default class Schedule extends Component {
                 </View>
             )
         } else {
+            console.log(event)
             return (
                 <View style={styles.cardContainer}>
                     <Text style={styles.time}>{event.id + 1 > 12 ? event.id + 1 - 12 + " PM" : event.id + 1 + " AM"}</Text>
-                    <View style={styles.card}>
-                    <EventCard event={event} navigation={this.props.navigation}></EventCard>
+                    <View style={styles.card}> 
+                        <EventCard event={event.info} navigation={this.props.navigation}></EventCard>
                     </View>
                 </View>
             )
