@@ -1,5 +1,6 @@
 import React, {Component} from "react";
 import { View, Text, Switch, StyleSheet } from "react-native";
+import { isEnabled } from "react-native/Libraries/Performance/Systrace";
 
 const lightColors = {
     red:"rgba(255,0,0,0.5)",
@@ -20,9 +21,21 @@ const colors = {
 };
 
 export default class EventScreen extends Component {
+    constructor() {
+        super();
+        this.state = {
+            isEnabled: false
+        }
+    }
 
     componentDidMount() {
         console.log(this.props);
+    }
+
+    toggleSwitch=()=> {
+        this.setState({
+            isEnabled: !this.state.isEnabled
+        })
     }
 
     render() {
@@ -37,8 +50,16 @@ export default class EventScreen extends Component {
                 </View>
 
                 <View style={styles.switchContainer}>
-                    <Switch></Switch>
-                    <Text>Mark As Complete</Text>
+                    <Text style={styles.switchText}>Mark As Complete</Text>
+                    <Switch
+                    trackColor={{
+                        false: "#767577",
+                        true: info.color
+                      }}
+                      thumbColor={"#f4f3f4"}
+                      ios_backgroundColor="#3e3e3e"
+                      onValueChange={() => this.toggleSwitch()}
+                      value={this.state.isEnabled}></Switch>
                 </View>
                 <Text style={styles.description}>{info.description}</Text>
             </View>
@@ -51,40 +72,51 @@ const styles = StyleSheet.create({
     container:{
         flex:1,
         margin:5,
-        width:"95%",
         justifyContent:"center",
 
     },
     switchContainer:{
-        flexDirection:"row"
+        flexDirection:"row",
+        alignSelf:"center",
+        justifyContent:"center",
+        marginVertical:20
+    },
+    switchText:{
+
+        fontSize:24,
+        marginRight:10
     },
     boundaryBox:{
         // opacity:0.5,
         borderRadius:10,
         // padding:10,
         backgroundColor:'rgb(255,150,150)',
-        
+        height:"95%",
+        width:"95%",
+        alignSelf:"center"
     },
     titleBox: {
         // opacity:1,
         flexDirection:"row",
         borderTopLeftRadius:10,
         borderTopRightRadius:10,
-        padding:8,
+        padding:10,
         alignItems:'center',
         backgroundColor:"cyan",
-        justifyContent:'space-between'
+        justifyContent:'space-between',
+        paddingHorizontal:15
     },
     title:{
         fontWeight:"bold",
-        fontSize:16
+        fontSize:30
     },
     time:{
         fontWeight:"300",
-        fontSize:16,
+        fontSize:25,
         textAlign:"right",
     },
     description:{
-        padding:12
+        padding:12,
+        fontSize:20
     }
 });
