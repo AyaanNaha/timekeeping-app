@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
-// import * as firebase from "firebase";
+
 
 export default class Login extends Component {
     constructor() {
@@ -20,7 +20,7 @@ export default class Login extends Component {
             this.props.navigation.replace("DrawerNavigator");
             // })
             // .catch((error) => {
-            //     console.log(error)
+            //     console.log(error);
             // });
         }
 
