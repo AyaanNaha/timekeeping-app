@@ -30,6 +30,9 @@ export default class Login extends Component {
             signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     const user = userCredential.user;
+                    // console.log(user);
+                    console.log("logged in user " + user.displayName);
+                    auth.updateCurrentUser(user);
                     this.props.navigation.replace("DrawerNavigator");
                 }).catch((error) => {
                     const errorCode = error.code;
@@ -85,12 +88,13 @@ const styles = StyleSheet.create({
     inputBox: {
         borderWidth: 4,
         borderColor: "#333",
-        fontSize: 30,
+        fontSize: 20,
         textAlign: "center",
         width: "75%",
         borderRadius: 15,
         backgroundColor: "#BBB",
-        marginTop: 5
+        marginTop: 5,
+        padding:5
     },
     button: {
         borderWidth: 4,

@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { auth } from "../config";
 
 export default class Register extends Component {
     constructor() {
@@ -13,7 +15,31 @@ export default class Register extends Component {
         }
     }
 
+    registerUser = (email, password, confirmedPassword, firstName, lastName) => {
+        if(confirmedPassword != password) {
+            alert("Passwords do not match");
+        } else if (firstName == "" || lastName == "") {
+            alert("Invalid Name")
+        } else {
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    updateProfile(user, { displayName: firstName + " " + lastName});
+                    
+                    this.props.navigation.navigate("Login");
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    console.log("ERROR CODE: " + errorCode + "\n" + errorMessage);
+                    alert("ERROR CODE: " + errorCode + "\n" + errorMessage)
+                })
+        }
+        
+    }
+
     render() {
+        let {email, password, confirmedPassword, firstName, lastName} = this.state
         return (
             <View style={styles.container}>
                 <Text style={styles.text}>Sign Up</Text>
@@ -45,7 +71,9 @@ export default class Register extends Component {
                 ></TextInput>
 
 
-                <TouchableOpacity style={styles.button}>
+                <TouchableOpacity style={styles.button} onPress={
+                    () => this.registerUser(email, password, confirmedPassword, firstName, lastName)
+                    }>
                     <Text style={styles.text}>Register</Text>
                 </TouchableOpacity>
             </View>
