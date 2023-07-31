@@ -1,6 +1,8 @@
 import React, {Component} from "react";
 import { View, Text, ScrollView, FlatList, StyleSheet } from "react-native";
 import EventCard from "./EventCard";
+import { ref, onValue, set, update } from "firebase/database";
+import { auth, database } from "../config";
 
 
 export default class Schedule extends Component {
@@ -13,19 +15,7 @@ export default class Schedule extends Component {
 
     componentDidMount() {
         for (var i = 0; i < 24; i++) {
-            // if(i < 8 || i > 18) {
                 this.state.data.push({id: i, info:[]})
-            // } else {
-            //     this.state.data.push({
-            //         id: i, 
-            //         info: {
-            //             title: "Coding Class", 
-            //             time: i + 1 + ":00 - " + (i+2) + ":00", 
-            //             description: "Learn coding yayaya", 
-            //             color:"magenta"
-            //         }
-            //     });
-            // }
         }
 
         this.state.data[12].info = [{
@@ -40,6 +30,43 @@ export default class Schedule extends Component {
             color:"cyan"
         }]
 
+        this.fetchEvents();
+    }
+
+    fetchEvents = () => {
+        var date = new Date().toDateString();
+        var todaysRefIsNull = false;
+
+        const userRef = ref(database, 'users/' + auth.currentUser.uid);
+
+        const eventRef = ref(database, `events/${auth.currentUser.uid}/${date}/`);
+        onValue(eventRef, (snapshot) => {
+            if(snapshot.val() == null) {
+                todaysRefIsNull = true;
+            }
+        })
+
+        if (todaysRefIsNull) {
+            this.createEmptyEventsList(userRef, date)
+        }
+
+
+    }
+
+    createEmptyEventsList(userRef, date) {
+        eventInfo = []
+        for (var i = 0; i < 24; i++) {
+            eventInfo.push({id: i, info:[]});
+        }
+
+        const eventRef = ref(database, 'events/' + auth.currentUser.uid)
+        set(eventRef, {
+            [date]: eventInfo
+        });
+
+        update(userRef, {
+            lastLoginAt: date
+        });
     }
 
     renderItem = ({item: event}) => {
@@ -51,7 +78,7 @@ export default class Schedule extends Component {
                 </View>
             )
         } else {
-            console.log(event)
+            // console.log(event)
             return (
                 <View style={styles.cardContainer}>
                     <Text style={styles.time}>{event.id + 1 > 12 ? event.id + 1 - 12 + " PM" : event.id + 1 + " AM"}</Text>

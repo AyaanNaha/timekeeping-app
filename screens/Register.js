@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth } from "../config";
+import { auth, database } from "../config";
+import { ref, set } from "firebase/database";
 
 export default class Register extends Component {
     constructor() {
@@ -24,8 +25,20 @@ export default class Register extends Component {
             createUserWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     const user = userCredential.user;
+                    const uid = userCredential.user.uid;
+
+                    // Creating user data in auth
                     updateProfile(user, { displayName: firstName + " " + lastName});
-                    
+
+                    // Creating user data in DB
+                    set(ref(database, '/users/' + uid), {
+                        name: firstName + " " + lastName,
+                        email: email,
+                        lastLoginAt: new Date().toDateString()
+                    })
+
+                    set(ref(database, 'events/' + uid))
+
                     this.props.navigation.navigate("Login");
                 })
                 .catch((error) => {

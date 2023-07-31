@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../config";
+import { auth, database } from "../config";
+import { ref, set, update } from "firebase/database";
 
 export default class Login extends Component {
     constructor() {
@@ -27,12 +28,18 @@ export default class Login extends Component {
              */
 
             // WEB MODULAR API
+
             signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     const user = userCredential.user;
                     // console.log(user);
                     console.log("logged in user " + user.displayName);
                     auth.updateCurrentUser(user);
+
+                    // update(ref(database, '/users/' + user.uid), {
+                    //     lastLoginAt: new Date().toDateString()
+                    // })
+
                     this.props.navigation.replace("DrawerNavigator");
                 }).catch((error) => {
                     const errorCode = error.code;

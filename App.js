@@ -21,6 +21,10 @@ const StackNav = () => {
 
 export default class App extends Component {
 
+  componentDidMount() {
+    // console.log(new Date().toDateString());
+  }
+
   render () {
     return(
       <NavigationContainer>

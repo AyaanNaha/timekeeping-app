@@ -1,6 +1,7 @@
 import React, {Component} from "react";
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Switch } from "react-native";
 import DropDownPicker from 'react-native-dropdown-picker';
+import { database } from "../config";
 
 export default class Create extends Component {
     constructor() {
@@ -10,21 +11,73 @@ export default class Create extends Component {
             description:"",
             startTime:"",
             endTime:"",
-            color:""
+            color:"",
+            repeats:{
+                SUN:false,
+                MON:false,
+                TUE:false,
+                WED:false,
+                THU:false,
+                FRI:false,
+                SAT:false,
+            },
+            date:""
         }
     }
 
-    createEvent = (title, description, startTime, endTime, color) => {
-        if (title == "" || description == "" || startTime == "") {
+    createEvent = (title, description, startTime, endTime, color, date, repeats) => {
+        if (title == "" || description == "" || startTime == "" || date == "") {
             alert("Please fill all fields")
             return;
         }
+
+        var eventDate = new Date(date).toDateString();
         
-        alert("Made new event\ntitle: " + title + 
-        "\ndesctiption: " + description + 
-        "\nstartTime: " + startTime +
-        "\nendTime: " + endTime +
-        "\ncolor: " + color)
+        var eventRepeats = false;
+        for(var i = 0; i < repeats.length; i++) {
+            if(repeats[i]) {
+                eventRepeats = true;
+            }
+        }
+
+        if(eventRepeats) {
+            this.createRepeatingEvent(title, description, startTime, endTime, color, eventDate, repeats)
+        } else {
+            this.createScheduledEvent(title, description, startTime, endTime, color, eventDate)
+        }
+    }
+
+    createRepeatingEvent = (title, description, startTime, endTime, color, date, repeats) => {
+        
+        var dateRefIsNull = false
+        const eventRef = ref(database, `events/${auth.currentUser.uid}/${date}/`);
+        onValue(eventRef, (snapshot) => {
+            if(snapshot.val() == null) {
+                dateRefIsNull = true;
+            }
+        })
+
+        if(dateRefIsNull) {
+            var id;
+            if (startTime.toUpperCase().contains("PM")) {
+                startTimeSplit = startTime.split(":");
+                id = parseInt(startTimeSplit[0]) + 12;
+            }
+
+            //ADD CODE TO CREATE THE EVENT JSON TO ADD INTO DATABASE
+
+            var repeatingEventsRef = ref(database, `events/${auth.currentUser.uid}/repeatingEvents`);
+            for(var i = 0; i < repeats.length; i++) {
+                if(repeats[i]) {
+                    //ENTER CODE FOR TO ADD THE EVENT INTO EACH DAY IT REPEATS HERE
+                }
+            }
+            
+        }
+    }
+
+    createScheduledEvent = (title, description, startTime, endTime, color, date) => {
+
     }
 
     render() {
@@ -49,6 +102,11 @@ export default class Create extends Component {
                     style={styles.inputBox}
                     onChangeText={text => this.setState({ endTime: text })}
                     placeholder={"Enter Ending Time"} placeholderTextColor={"#333"}
+                ></TextInput>
+                <TextInput
+                    style={styles.inputBox}
+                    onChangeText={text => this.setState({ date: text })}
+                    placeholder={"Enter date (mm/dd/yyyy)"} placeholderTextColor={"#333"}
                 ></TextInput>
                 <DropDownPicker
                 items={[
@@ -83,7 +141,150 @@ export default class Create extends Component {
                 >
                 </DropDownPicker>
 
-                <TouchableOpacity onPress={() => this.createEvent(this.state.title, this.state.description, this.state.startTime, this.state.endTime, this.state.color)}
+                <Text>Repeats:</Text>
+
+                <View style={styles.repeatSwitchContainer}>
+                    <Text style={styles.repeatText}>Sunday </Text>
+                    <Switch
+                        trackColor={{
+                            false: "#767577",
+                            true: "#00dd00"
+                        }}
+                        thumbColor={"#f4f3f4"}
+                        ios_backgroundColor="#3e3e3e"
+                        onValueChange={() => {
+                            this.setState({
+                                repeats: { SUN: !this.state.repeats.SUN }
+                            })
+                        }}
+                        value={this.state.repeats.SUN}>
+        
+                        </Switch>
+                </View>
+
+                <View style={styles.repeatSwitchContainer}>
+                    <Text style={styles.repeatText}>Monday </Text>
+                    <Switch
+                        trackColor={{
+                            false: "#767577",
+                            true: "#00dd00"
+                        }}
+                        thumbColor={"#f4f3f4"}
+                        ios_backgroundColor="#3e3e3e"
+                        onValueChange={() => {
+                            this.setState({
+                                repeats: { MON: !this.state.repeats.MON }
+                            })
+                        }}
+                        value={this.state.repeats.MON}>
+        
+                        </Switch>
+                </View>
+
+                <View style={styles.repeatSwitchContainer}>
+                    <Text style={styles.repeatText}>Tuesday </Text>
+                    <Switch
+                        trackColor={{
+                            false: "#767577",
+                            true: "#00dd00"
+                        }}
+                        thumbColor={"#f4f3f4"}
+                        ios_backgroundColor="#3e3e3e"
+                        onValueChange={() => {
+                            this.setState({
+                                repeats: { TUE: !this.state.repeats.TUE }
+                            })
+                        }}
+                        value={this.state.repeats.TUE}>
+        
+                        </Switch>
+                </View>
+
+                <View style={styles.repeatSwitchContainer}>
+                    <Text style={styles.repeatText}>Wednesday </Text>
+                    <Switch
+                        trackColor={{
+                            false: "#767577",
+                            true: "#00dd00"
+                        }}
+                        thumbColor={"#f4f3f4"}
+                        ios_backgroundColor="#3e3e3e"
+                        onValueChange={() => {
+                            this.setState({
+                                repeats: { WED: !this.state.repeats.WED }
+                            })
+                        }}
+                        value={this.state.repeats.WED}>
+        
+                        </Switch>
+                </View>
+
+                <View style={styles.repeatSwitchContainer}>
+                    <Text style={styles.repeatText}>Thursday </Text>
+                    <Switch
+                        trackColor={{
+                            false: "#767577",
+                            true: "#00dd00"
+                        }}
+                        thumbColor={"#f4f3f4"}
+                        ios_backgroundColor="#3e3e3e"
+                        onValueChange={() => {
+                            this.setState({
+                                repeats: { THU: !this.state.repeats.THU }
+                            })
+                        }}
+                        value={this.state.repeats.THU}>
+        
+                        </Switch>
+                </View>
+
+                <View style={styles.repeatSwitchContainer}>
+                    <Text style={styles.repeatText}>Friday </Text>
+                    <Switch
+                        trackColor={{
+                            false: "#767577",
+                            true: "#00dd00"
+                        }}
+                        thumbColor={"#f4f3f4"}
+                        ios_backgroundColor="#3e3e3e"
+                        onValueChange={() => {
+                            this.setState({
+                                repeats: { FRI: !this.state.repeats.FRI }
+                            })
+                        }}
+                        value={this.state.repeats.FRI}>
+        
+                        </Switch>
+                </View>
+
+                <View style={styles.repeatSwitchContainer}>
+                    <Text style={styles.repeatText}>Saturday </Text>
+                    <Switch
+                        trackColor={{
+                            false: "#767577",
+                            true: "#00dd00"
+                        }}
+                        thumbColor={"#f4f3f4"}
+                        ios_backgroundColor="#3e3e3e"
+                        onValueChange={() => {
+                            this.setState({
+                                repeats: { SAT: !this.state.repeats.SAT }
+                            })
+                        }}
+                        value={this.state.repeats.SAT}>
+        
+                        </Switch>
+                </View>
+
+                <TouchableOpacity onPress={
+                    () => this.createEvent(this.state.title, 
+                                        this.state.description, 
+                                        this.state.startTime, 
+                                        this.state.endTime, 
+                                        this.state.color,
+                                        this.state.date,
+                                        this.state.repeats)
+                                    }
                     style={styles.button}>
                     <Text style={styles.text}>Submit</Text>
                 </TouchableOpacity>
@@ -101,6 +302,16 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: "#DDD"
+    },
+    repeatSwitchContainer:{
+        flexDirection:"row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginHorizontal:"25%",
+        marginVertical:1
+    },
+    repeatText:{
+        fontSize:20
     },
     text: {
         fontSize: 40,
