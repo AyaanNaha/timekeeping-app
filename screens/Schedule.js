@@ -5,15 +5,26 @@ import { ref, onValue, set, update } from "firebase/database";
 import { auth, database } from "../config";
 
 
+
 export default class Schedule extends Component {
     constructor() {
         super();
         this.state= {
-            data: []
+            data: [],
+            isLoading:true
         }
     }
 
+    componentDidUpdate(prevProps) {
+        if (prevProps.isFocused !== this.props.isFocused) {
+          // Use the `this.props.isFocused` boolean
+          // Call any action
+          this.setState({isLoading: true})
+        }
+      }
+
     componentDidMount() {
+        /*
         for (var i = 0; i < 24; i++) {
                 this.state.data.push({id: i, info:[]})
         }
@@ -29,9 +40,14 @@ export default class Schedule extends Component {
             description: "sleepy sleepy",
             color:"cyan"
         }]
+        */
 
-        this.fetchEvents();
+        // this.fetchEvents();
+
+        // console.log("ScheduleScreenProps=" + this.props.navigation);
+        // console.log(this.props)
     }
+
 
     fetchEvents = () => {
         var date = new Date().toDateString();
@@ -40,17 +56,35 @@ export default class Schedule extends Component {
         const userRef = ref(database, 'users/' + auth.currentUser.uid);
 
         const eventRef = ref(database, `events/${auth.currentUser.uid}/${date}/`);
-        onValue(eventRef, (snapshot) => {
+         onValue(eventRef, (snapshot) => {
             if(snapshot.val() == null) {
                 todaysRefIsNull = true;
+            } else {
+                // console.log(snapshot.val())
+
+                let eventData = [];
+
+                snapshot.val().forEach(element => {
+                    if (element.info == undefined) {
+                        eventData.push({id: element.id, info:[]})
+                        // console.log("pushed " + element + " into data");
+                    } else {
+                        eventData.push(element)
+                    }
+                    
+                });
+
+                this.setState({data: eventData});
             }
         })
+
+        // console.log(this.state.data)
 
         if (todaysRefIsNull) {
             this.createEmptyEventsList(userRef, date)
         }
 
-
+        this.setState({isLoading: false})
     }
 
     createEmptyEventsList(userRef, date) {
@@ -60,7 +94,7 @@ export default class Schedule extends Component {
         }
 
         const eventRef = ref(database, 'events/' + auth.currentUser.uid)
-        set(eventRef, {
+        update(eventRef, {
             [date]: eventInfo
         });
 
@@ -70,6 +104,9 @@ export default class Schedule extends Component {
     }
 
     renderItem = ({item: event}) => {
+        // console.log(event);
+        
+
         if(!event.info[0]) {
             return (
                 <View style={styles.cardContainer}>
@@ -94,29 +131,50 @@ export default class Schedule extends Component {
     
 
     render() {
-        return (
+        
+
+        if(this.state.isLoading) {
+            this.fetchEvents();
+            this.setState({isLoading: false});
+
+            return (
             <View>
-                <Text style={{fontSize:25}}>Schedule Screen</Text>
-
-                
-                {/* <ScrollView/> */}
-                    <FlatList 
-                     data={this.state.data}
-                     renderItem={this.renderItem}
-                     keyExtractor={this.keyExtractor}
-                    />
-
+                <Text style={{fontSize:25}}>Loading...</Text>
             </View>
-        )
+            )
+        } else {
+
+            return (
+                <View style={styles.container}>
+                    <Text style={{fontSize:25}}>Schedule Screen</Text>
+
+                    
+                    {/* <ScrollView/> */}
+                        <FlatList 
+                        data={this.state.data}
+                        renderItem={this.renderItem}
+                        keyExtractor={this.keyExtractor}
+                        style={styles.list}
+                        />
+
+                </View>
+            )
+        }
     }
 }
 
 const styles = StyleSheet.create({
+    container:{
+        
+    },
+    list:{
+       paddingVertical:10
+    },
     cardContainer:{
         flex:1,
         flexDirection:"row",
         justifyContent:"flex-end",
-        marginRight:10
+        marginRight:10,
     },
     card:{    
         borderWidth:2,

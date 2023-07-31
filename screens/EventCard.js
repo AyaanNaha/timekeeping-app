@@ -26,11 +26,25 @@ export default class EventCard extends Component {
     }
 
     componentDidMount() {
-        // console.log(this.props)
+        console.log(this.props)
     }
 
     renderItem = ({item: info}) => {
-        return (
+        console.log(info.completed)
+        if(info.completed) {
+            return (
+            <TouchableOpacity style={styles.container} onPress={
+                () => this.props.navigation.navigate("EventScreen", info)}
+                >
+                    <View style={[styles.titleBox, {borderRadius:10}]}>
+                        <Text style={[styles.title, {textDecorationLine:"line-through"}]}>{info.title}</Text>
+                        <Text style={styles.time}>{info.time}</Text>
+                    </View> 
+                </TouchableOpacity>
+                )
+        
+        } else{ 
+            return (
         <TouchableOpacity style={styles.container} onPress={() => this.props.navigation.navigate("EventScreen", info)}>
             <View style={[styles.boundaryBox, {backgroundColor:lightColors[info.color]}]}>
                 <View style={[styles.titleBox, {backgroundColor:colors[info.color]}]}>
@@ -41,6 +55,7 @@ export default class EventCard extends Component {
             </View>
         </TouchableOpacity>
         )
+    }
     }
 
     keyExtractor = (item, index) => index.toString();
@@ -79,7 +94,7 @@ const styles = StyleSheet.create({
         borderTopRightRadius:10,
         padding:8,
         alignItems:'center',
-        backgroundColor:"cyan",
+        backgroundColor:"rgb(150,150,150)",
         justifyContent:'space-between'
     },
     title:{

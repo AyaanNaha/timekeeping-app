@@ -1,6 +1,8 @@
+import { ref, update } from "firebase/database";
 import React, {Component} from "react";
 import { View, Text, Switch, StyleSheet } from "react-native";
-import { isEnabled } from "react-native/Libraries/Performance/Systrace";
+import { auth, database } from "../config";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 const lightColors = {
     red:"rgba(255,0,0,0.5)",
@@ -30,12 +32,29 @@ export default class EventScreen extends Component {
 
     componentDidMount() {
         console.log(this.props);
+        this.fetchCompletionStatus()
     }
 
-    toggleSwitch=()=> {
+    fetchCompletionStatus = () => {
+        // const eventRef = ref(database, `events/${auth.currentUser.uid}/${new Date().toDateString()}`)
+        this.setState({isEnabled: this.props.route.params.completed})
+    }
+
+    toggleSwitch = (path) => {
         this.setState({
             isEnabled: !this.state.isEnabled
         })
+
+        const eventRef = ref(database, path);
+        update(eventRef, {
+            completed: !this.state.isEnabled
+        }) .catch((error) => {
+            alert(error.message);
+            console.log("ERROR CODE: " + error.code + "\nERROR MESSAGE: " + error.message)
+        })
+
+        
+       
     }
 
     render() {
@@ -43,6 +62,9 @@ export default class EventScreen extends Component {
 
         return (
         <View style={styles.container}>
+            <TouchableOpacity onPress={() => {this.props.navigation.goBack({reloadRequired:true})}}>
+                <Text>Go Back</Text>
+            </TouchableOpacity>
             <View style={[styles.boundaryBox, {backgroundColor:lightColors[info.color]}]}>
                 <View style={[styles.titleBox, {backgroundColor:colors[info.color]}]}>
                     <Text style={styles.title}>{info.title}</Text>
@@ -58,7 +80,7 @@ export default class EventScreen extends Component {
                       }}
                       thumbColor={"#f4f3f4"}
                       ios_backgroundColor="#3e3e3e"
-                      onValueChange={() => this.toggleSwitch()}
+                      onValueChange={() => this.toggleSwitch(info.path)}
                       value={this.state.isEnabled}></Switch>
                 </View>
                 <Text style={styles.description}>{info.description}</Text>
