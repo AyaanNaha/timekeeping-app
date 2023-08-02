@@ -3,8 +3,14 @@ import { View, Text, ScrollView, FlatList, StyleSheet } from "react-native";
 import EventCard from "./EventCard";
 import { ref, onValue, set, update } from "firebase/database";
 import { auth, database } from "../config";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
-
+/**
+ * console.log("switched to schedule")
+            this.setState({isLoading: true})
+            this.fetchEvents();
+            this.setState({isLoading: false});
+ */
 
 export default class Schedule extends Component {
     constructor() {
@@ -19,9 +25,12 @@ export default class Schedule extends Component {
         if (prevProps.isFocused !== this.props.isFocused) {
           // Use the `this.props.isFocused` boolean
           // Call any action
-          this.setState({isLoading: true})
+          console.log("navigated to schedule")
+        //   this.setState({isLoading: true})
         }
       }
+
+      
 
     componentDidMount() {
         /*
@@ -46,71 +55,90 @@ export default class Schedule extends Component {
 
         // console.log("ScheduleScreenProps=" + this.props.navigation);
         // console.log(this.props)
+
+        this.fetchEvents();
+        this.setState({isLoading: false});
     }
 
-
     fetchEvents = () => {
-        var date = new Date().toDateString();
-        var todaysRefIsNull = false;
+        eventData = [];
 
-        const userRef = ref(database, 'users/' + auth.currentUser.uid);
+        const eventRef = ref(database, `events/${auth.currentUser.uid}`);
+        onValue(eventRef, (snapshot) => {
+            // console.log(snapshot.val())
+            eventData = snapshot.val();
+        })
 
-        const eventRef = ref(database, `events/${auth.currentUser.uid}/${date}/`);
-         onValue(eventRef, (snapshot) => {
-            if(snapshot.val() == null) {
-                todaysRefIsNull = true;
-            } else {
-                // console.log(snapshot.val())
+        // console.log("event Data = " + eventData)
+        let date = new Date().toDateString();
+        let day = date.slice(0,2).toUpperCase();
 
-                let eventData = [];
+        let tempData = this.createEmptyEventsList();
 
-                snapshot.val().forEach(element => {
-                    if (element.info == undefined) {
-                        eventData.push({id: element.id, info:[]})
-                        // console.log("pushed " + element + " into data");
-                    } else {
-                        eventData.push(element)
-                    }
-                    
-                });
+        eventData.forEach((event) => {
+            if(event.info.date == date) {
+                tempData[event.id].info.push(event.info)
+            }
 
-                this.setState({data: eventData});
+            if(event.info.repeats) {
+                if(event.info.repeats.includes(day)) {
+                    tempData[event.id].info.push(event.info)
+                }
             }
         })
 
-        // console.log(this.state.data)
+        this.setState({data: tempData});
 
-        if (todaysRefIsNull) {
-            this.createEmptyEventsList(userRef, date)
-        }
-
-        this.setState({isLoading: false})
+        // console.log(this.state.data[9])
     }
 
-    createEmptyEventsList(userRef, date) {
-        eventInfo = []
+    createEmptyEventsList = () => {
+        let eventData = []
+
         for (var i = 0; i < 24; i++) {
-            eventInfo.push({id: i, info:[]});
+            eventData.push({id: i, info:[]});
         }
 
-        const eventRef = ref(database, 'events/' + auth.currentUser.uid)
-        update(eventRef, {
-            [date]: eventInfo
-        });
+        return eventData;
 
-        update(userRef, {
-            lastLoginAt: date
-        });
+        // console.log(eventInfo);
+
+        // this.setState({data: eventInfo});
+
+        // console.log(this.state.data)
+
+        // const eventRef = ref(database, 'events/' + auth.currentUser.uid)
+        // update(eventRef, {
+        //     [date]: eventInfo
+        // });
+
+        // update(userRef, {
+        //     lastLoginAt: date
+        // });
     }
 
     renderItem = ({item: event}) => {
+        // console.log(event);
+        let time;
+        if(event.id + 1 > 12) {
+            event.id + 1 == 24 ? 
+                time = (event.id + 1 - 12) + " AM" : 
+                time = (event.id + 1 - 12) + " PM" 
+        } else {
+            event.id + 1 == 12 ? 
+                time = (event.id + 1) + " PM" : 
+                time = (event.id + 1) + " AM" 
+        }
+
+        // console.log(this.state.data)
+
         // console.log(event);
         
 
         if(!event.info[0]) {
             return (
                 <View style={styles.cardContainer}>
-                    <Text style={styles.time}>{event.id + 1 > 12 ? event.id + 1 - 12 + " PM" : event.id + 1 + " AM"}</Text>
+                    <Text style={styles.time}>{time}</Text>
                     <View style={[styles.card, {paddingVertical:25}]}></View>
                 </View>
             )
@@ -118,7 +146,7 @@ export default class Schedule extends Component {
             // console.log(event)
             return (
                 <View style={styles.cardContainer}>
-                    <Text style={styles.time}>{event.id + 1 > 12 ? event.id + 1 - 12 + " PM" : event.id + 1 + " AM"}</Text>
+                    <Text style={styles.time}>{time}</Text>
                     <View style={styles.card}> 
                         <EventCard event={event.info} navigation={this.props.navigation}></EventCard>
                     </View>
@@ -134,8 +162,8 @@ export default class Schedule extends Component {
         
 
         if(this.state.isLoading) {
-            this.fetchEvents();
-            this.setState({isLoading: false});
+            // this.fetchEvents();
+            // this.setState({isLoading: false});
 
             return (
             <View>
@@ -147,6 +175,9 @@ export default class Schedule extends Component {
             return (
                 <View style={styles.container}>
                     <Text style={{fontSize:25}}>Schedule Screen</Text>
+                    <TouchableOpacity onPress={() => this.fetchEvents()}>
+                        <Text>Reload</Text>
+                    </TouchableOpacity>
 
                     
                     {/* <ScrollView/> */}

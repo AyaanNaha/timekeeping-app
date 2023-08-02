@@ -26,11 +26,11 @@ export default class EventCard extends Component {
     }
 
     componentDidMount() {
-        console.log(this.props)
+        // console.log(this.props)
     }
 
     renderItem = ({item: info}) => {
-        console.log(info.completed)
+        // console.log(info.completed)
         if(info.completed) {
             return (
             <TouchableOpacity style={styles.container} onPress={

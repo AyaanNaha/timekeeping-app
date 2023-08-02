@@ -37,7 +37,21 @@ export default class Register extends Component {
                         lastLoginAt: new Date().toDateString()
                     })
 
-                    set(ref(database, 'events/' + uid))
+                    set(ref(database, 'events/' + uid), {
+                        0: {
+                            id:13,
+                            info: {
+                                color: "green",
+                                completed: "false",
+                                date: new Date().toDateString(),
+                                path: `events/${uid}/0/info`,
+                                repeats:"NONE",
+                                time:"12:00",
+                                title: "Your First Event",
+                                description: "Create your own events!"
+                            }
+                        }
+                    })
 
                     this.props.navigation.navigate("Login");
                 })

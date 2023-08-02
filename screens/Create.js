@@ -1,7 +1,8 @@
 import React, {Component} from "react";
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Switch } from "react-native";
 import DropDownPicker from 'react-native-dropdown-picker';
-import { database } from "../config";
+import { auth, database } from "../config";
+import { child, onValue, set, update, ref } from "firebase/database";
 
 export default class Create extends Component {
     constructor() {
@@ -12,17 +13,13 @@ export default class Create extends Component {
             startTime:"",
             endTime:"",
             color:"",
-            repeats:{
-                SUN:false,
-                MON:false,
-                TUE:false,
-                WED:false,
-                THU:false,
-                FRI:false,
-                SAT:false,
-            },
-            date:""
+            repeats:"",
+            date:"",
         }
+    }
+
+    componentDidMount() {
+            
     }
 
     createEvent = (title, description, startTime, endTime, color, date, repeats) => {
@@ -31,13 +28,13 @@ export default class Create extends Component {
             return;
         }
 
-        var eventDate = new Date(date).toDateString();
+        // Creating date object
+        var dateSplit = date.split("/")
+        var eventDate = new Date(dateSplit[2], dateSplit[0] - 1, dateSplit[1]).toDateString();
         
         var eventRepeats = false;
-        for(var i = 0; i < repeats.length; i++) {
-            if(repeats[i]) {
-                eventRepeats = true;
-            }
+        if(repeats.length > 1) {
+            eventRepeats = true;
         }
 
         if(eventRepeats) {
@@ -45,39 +42,132 @@ export default class Create extends Component {
         } else {
             this.createScheduledEvent(title, description, startTime, endTime, color, eventDate)
         }
+
+        alert("Created Event")
     }
 
     createRepeatingEvent = (title, description, startTime, endTime, color, date, repeats) => {
-        
-        var dateRefIsNull = false
-        const eventRef = ref(database, `events/${auth.currentUser.uid}/${date}/`);
+
+        let eventData = []
+        const eventRef = ref(database, `events/${auth.currentUser.uid}/`);
         onValue(eventRef, (snapshot) => {
-            if(snapshot.val() == null) {
-                dateRefIsNull = true;
-            }
+            eventData = snapshot.val()
         })
 
-        if(dateRefIsNull) {
-            var id;
-            if (startTime.toUpperCase().contains("PM")) {
-                startTimeSplit = startTime.split(":");
-                id = parseInt(startTimeSplit[0]) + 12;
+    // if(dateRefIsNull) {
+        var id;
+        startTimeSplit = startTime.split(":");
+        if (startTime.toUpperCase().includes("PM")) {
+            id = parseInt(startTimeSplit[0]) - 1 + 12;
+        } else {
+            id = parseInt(startTimeSplit[0]) - 1
+        }
+
+        //ADD CODE TO CREATE THE EVENT JSON TO ADD INTO DATABASE
+
+
+        let event = {
+            id: id,
+            info: {
+                title: title,
+                description: description,
+                time: `${startTime}–${endTime}`,
+                color:color,
+                path: `events/${auth.currentUser.uid}/${eventData.length}/info/`,
+                completed: false,
+                date: date,
+                repeats: repeats
             }
+        }
 
-            //ADD CODE TO CREATE THE EVENT JSON TO ADD INTO DATABASE
+        update(eventRef, {
+            [eventData.length]: event
+        })
 
+        /** 
             var repeatingEventsRef = ref(database, `events/${auth.currentUser.uid}/repeatingEvents`);
             for(var i = 0; i < repeats.length; i++) {
                 if(repeats[i]) {
                     //ENTER CODE FOR TO ADD THE EVENT INTO EACH DAY IT REPEATS HERE
+                    let day = "";
+                    switch(i) {
+                        case 0: day = "SUN";
+                        case 1: day = "MON";
+                        case 2: day = "TUE";
+                        case 3: day = "WED";
+                        case 4: day = "THU";
+                        case 5: day = "FRI";
+                        case 6: day = "SAT";
+                    }
+
+                    if (day != "") {
+                        let dayRef = child(repeatingEventsRef, `/${day}/`);
+                        let dayArray = [];
+                        onValue(dayRef, (snapshot) => {
+                            dayArray = snapshot.val();
+                            console.log(snapshot.val());
+                        });
+                        dayArray.push(event);
+                        set(dayRef, dayArray)
+                    }
                 }
             }
+            */
+
             
-        }
+            
+        // }
     }
 
     createScheduledEvent = (title, description, startTime, endTime, color, date) => {
+        let eventData = []
+        const eventRef = ref(database, `events/${auth.currentUser.uid}/`);
+        onValue(eventRef, (snapshot) => {
+            eventData = snapshot.val()
+        })
 
+    // if(dateRefIsNull) {
+        var id;
+        startTimeSplit = startTime.split(":");
+        if (startTime.toUpperCase().includes("PM")) {
+            id = parseInt(startTimeSplit[0]) - 1 + 12;
+        } else {
+            id = parseInt(startTimeSplit[0]) - 1
+        }
+
+        //ADD CODE TO CREATE THE EVENT JSON TO ADD INTO DATABASE
+
+        let event = {
+            id: id,
+            info: {
+                title: title,
+                description: description,
+                time: `${startTime}–${endTime}`,
+                color:color,
+                path: `events/${auth.currentUser.uid}/${eventData.length}/info/`,
+                completed: false,
+                date: date,
+                repeats: "NONE"
+            }
+        }
+
+        update(eventRef, {
+            [eventData.length]: event
+        })
+        
+    }
+
+    toggleRepeatSwitch = (day) => {
+        let repeatingDays = this.state.repeats
+        if (repeatingDays.includes(day)) {
+            repeatingDays = repeatingDays.replace(day + " ", "");
+        } else {
+            repeatingDays = repeatingDays.concat(`${day} `)
+        }
+
+        this.setState({repeats: repeatingDays})
+
+        console.log(repeatingDays)
     }
 
     render() {
@@ -152,12 +242,8 @@ export default class Create extends Component {
                         }}
                         thumbColor={"#f4f3f4"}
                         ios_backgroundColor="#3e3e3e"
-                        onValueChange={() => {
-                            this.setState({
-                                repeats: { SUN: !this.state.repeats.SUN }
-                            })
-                        }}
-                        value={this.state.repeats.SUN}>
+                        onValueChange={() => {this.toggleRepeatSwitch("SUN")}}
+                        value={this.state.repeats.includes("SUN")}>
         
                         </Switch>
                 </View>
@@ -171,12 +257,8 @@ export default class Create extends Component {
                         }}
                         thumbColor={"#f4f3f4"}
                         ios_backgroundColor="#3e3e3e"
-                        onValueChange={() => {
-                            this.setState({
-                                repeats: { MON: !this.state.repeats.MON }
-                            })
-                        }}
-                        value={this.state.repeats.MON}>
+                        onValueChange={() => {this.toggleRepeatSwitch("MON")}}
+                        value={this.state.repeats.includes("MON")}>
         
                         </Switch>
                 </View>
@@ -190,12 +272,8 @@ export default class Create extends Component {
                         }}
                         thumbColor={"#f4f3f4"}
                         ios_backgroundColor="#3e3e3e"
-                        onValueChange={() => {
-                            this.setState({
-                                repeats: { TUE: !this.state.repeats.TUE }
-                            })
-                        }}
-                        value={this.state.repeats.TUE}>
+                        onValueChange={() => {this.toggleRepeatSwitch("TUE")}}
+                        value={this.state.repeats.includes("TUE")}>
         
                         </Switch>
                 </View>
@@ -209,12 +287,8 @@ export default class Create extends Component {
                         }}
                         thumbColor={"#f4f3f4"}
                         ios_backgroundColor="#3e3e3e"
-                        onValueChange={() => {
-                            this.setState({
-                                repeats: { WED: !this.state.repeats.WED }
-                            })
-                        }}
-                        value={this.state.repeats.WED}>
+                        onValueChange={() => {this.toggleRepeatSwitch("WED")}}
+                        value={this.state.repeats.includes("WED")}>
         
                         </Switch>
                 </View>
@@ -228,12 +302,8 @@ export default class Create extends Component {
                         }}
                         thumbColor={"#f4f3f4"}
                         ios_backgroundColor="#3e3e3e"
-                        onValueChange={() => {
-                            this.setState({
-                                repeats: { THU: !this.state.repeats.THU }
-                            })
-                        }}
-                        value={this.state.repeats.THU}>
+                        onValueChange={() => {this.toggleRepeatSwitch("THU")}}
+                        value={this.state.repeats.includes("THU")}>
         
                         </Switch>
                 </View>
@@ -247,12 +317,8 @@ export default class Create extends Component {
                         }}
                         thumbColor={"#f4f3f4"}
                         ios_backgroundColor="#3e3e3e"
-                        onValueChange={() => {
-                            this.setState({
-                                repeats: { FRI: !this.state.repeats.FRI }
-                            })
-                        }}
-                        value={this.state.repeats.FRI}>
+                        onValueChange={() => {this.toggleRepeatSwitch("FRI")}}
+                        value={this.state.repeats.includes("FRI")}>
         
                         </Switch>
                 </View>
@@ -266,12 +332,8 @@ export default class Create extends Component {
                         }}
                         thumbColor={"#f4f3f4"}
                         ios_backgroundColor="#3e3e3e"
-                        onValueChange={() => {
-                            this.setState({
-                                repeats: { SAT: !this.state.repeats.SAT }
-                            })
-                        }}
-                        value={this.state.repeats.SAT}>
+                        onValueChange={() => {this.toggleRepeatSwitch("SAT")}}
+                        value={this.state.repeats.includes("SAT")}>
         
                         </Switch>
                 </View>

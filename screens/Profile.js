@@ -3,13 +3,13 @@ import { View, Text } from "react-native";
 import { auth } from "../config";
 import { TouchableOpacity } from "react-native-gesture-handler";
 
-const user = auth.currentUser;
+
 
 export default class Profile extends Component {
 
     componentDidMount() {
-        if (user) {
-            console.log(user)
+        if (auth.currentUser) {
+            console.log(auth.currentUser)
         }
     }
 
@@ -25,11 +25,11 @@ export default class Profile extends Component {
     render() {
         
 
-        if (user != null) {
+        if (auth.currentUser != null) {
             return (
                 <View>
-                    <Text style={{fontSize:30}}>{user.displayName}</Text>
-                    <Text style={{fontSize:30}}>{user.email}</Text>
+                    <Text style={{fontSize:30}}>{auth.currentUser.displayName}</Text>
+                    <Text style={{fontSize:30}}>{auth.currentUser.email}</Text>
 
                     <TouchableOpacity onPress={() => this.signOut()}>
                         <Text>Log Out</Text>
