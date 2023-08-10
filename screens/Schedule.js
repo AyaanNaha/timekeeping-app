@@ -17,16 +17,24 @@ export default class Schedule extends Component {
         super();
         this.state= {
             data: [],
-            isLoading:true
+            isLoading:true,
+            isFocused: false
         }
     }
 
-    componentDidUpdate(prevProps) {
-        if (prevProps.isFocused !== this.props.isFocused) {
+    componentDidUpdate() {
+        if (this.state.isFocused !== this.props.isFocused) {
+            
+
+            // console.log("navigated to schedule")
+            // this.fetchEvents();
+            
+            // this.setState({isFocused: this.props.isFocused})
           // Use the `this.props.isFocused` boolean
           // Call any action
-          console.log("navigated to schedule")
-        //   this.setState({isLoading: true})
+        //   if(!this.state.isLoading) {
+        //     this.setState({isLoading: true})
+        //   }
         }
       }
 
@@ -76,6 +84,7 @@ export default class Schedule extends Component {
         let tempData = this.createEmptyEventsList();
 
         eventData.forEach((event) => {
+            
             if(event.info.date == date) {
                 tempData[event.id].info.push(event.info)
             }
@@ -85,6 +94,7 @@ export default class Schedule extends Component {
                     tempData[event.id].info.push(event.info)
                 }
             }
+            
         })
 
         this.setState({data: tempData});
@@ -162,8 +172,8 @@ export default class Schedule extends Component {
         
 
         if(this.state.isLoading) {
-            // this.fetchEvents();
-            // this.setState({isLoading: false});
+            this.fetchEvents();
+            this.setState({isLoading: false});
 
             return (
             <View>
