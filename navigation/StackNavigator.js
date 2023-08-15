@@ -8,7 +8,7 @@ const Stack = createStackNavigator();
 const StackNavigator = () => {
     return (
         <Stack.Navigator screenOptions={{headerShown: false}}>
-            <Stack.Screen name="Schedule" component={Schedule}></Stack.Screen>
+            <Stack.Screen name="ScheduleScreen" component={Schedule}></Stack.Screen>
             <Stack.Screen name="EventScreen" component={EventScreen}></Stack.Screen>
         </Stack.Navigator>
     )

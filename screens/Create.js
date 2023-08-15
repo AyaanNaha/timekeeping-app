@@ -172,7 +172,7 @@ export default class Create extends Component {
 
     render() {
         return (
-            <View>
+            <View style={styles.container}>
                 <TextInput
                     style={styles.inputBox}
                     onChangeText={text => this.setState({ title: text })}
@@ -219,6 +219,9 @@ export default class Create extends Component {
                     backgroundColor: this.state.color,
                     borderWidth: 1,
                     borderColor: 'black',
+                    marginVertical:30,
+                    width:"50%",
+                    alignSelf:"center"
                   }}
                   textStyle={{
                     color: 'black',
@@ -231,8 +234,9 @@ export default class Create extends Component {
                 >
                 </DropDownPicker>
 
-                <Text>Repeats:</Text>
+                <Text style={styles.repeatText}>Repeats:</Text>
 
+                  <View style={styles.switches}>
                 <View style={styles.repeatSwitchContainer}>
                     <Text style={styles.repeatText}>Sunday </Text>
                     <Switch
@@ -337,6 +341,7 @@ export default class Create extends Component {
         
                         </Switch>
                 </View>
+                </View>
 
                 <TouchableOpacity onPress={
                     () => this.createEvent(this.state.title, 
@@ -365,11 +370,17 @@ const styles = StyleSheet.create({
         alignItems: "center",
         backgroundColor: "#DDD"
     },
+    switches:{
+        flexDirection:"row",
+        flexWrap:"wrap",
+        alignContent:"center",
+        justifyContent:"space-between",
+    },
     repeatSwitchContainer:{
         flexDirection:"row",
         justifyContent: "space-between",
         alignItems: "center",
-        marginHorizontal:"25%",
+        marginHorizontal:"5%",
         marginVertical:1
     },
     repeatText:{
@@ -386,7 +397,7 @@ const styles = StyleSheet.create({
         fontSize: 15,
         textAlign: "center",
         width: "75%",
-        borderRadius: 15,
+        borderRadius: 6,
         backgroundColor: "#BBB",
         marginTop: 5
     },

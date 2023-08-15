@@ -4,6 +4,7 @@ import EventCard from "./EventCard";
 import { ref, onValue, set, update } from "firebase/database";
 import { auth, database } from "../config";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 /**
  * console.log("switched to schedule")
@@ -90,7 +91,9 @@ export default class Schedule extends Component {
             }
 
             if(event.info.repeats) {
-                if(event.info.repeats.includes(day)) {
+                if(event.info.repeats.includes("NONE") && event.info.completed) {
+
+                } else if(event.info.repeats.includes(day)) {
                     tempData[event.id].info.push(event.info)
                 }
             }
@@ -172,8 +175,8 @@ export default class Schedule extends Component {
         
 
         if(this.state.isLoading) {
-            this.fetchEvents();
-            this.setState({isLoading: false});
+            // this.fetchEvents();
+            // this.setState({isLoading: false});
 
             return (
             <View>
@@ -184,10 +187,12 @@ export default class Schedule extends Component {
 
             return (
                 <View style={styles.container}>
-                    <Text style={{fontSize:25}}>Schedule Screen</Text>
-                    <TouchableOpacity onPress={() => this.fetchEvents()}>
-                        <Text>Reload</Text>
-                    </TouchableOpacity>
+                    <View style={styles.header}>
+                        <Text style={{fontSize:25}}>{new Date().toDateString()}</Text>
+                        <TouchableOpacity onPress={() => this.fetchEvents()}>
+                            <Ionicons name="reload-outline" style={styles.reloadIcon}></Ionicons>
+                        </TouchableOpacity>
+                    </View>
 
                     
                     {/* <ScrollView/> */}
@@ -207,6 +212,13 @@ export default class Schedule extends Component {
 const styles = StyleSheet.create({
     container:{
         
+    },
+    reloadIcon:{
+        fontSize:35
+    },
+    header:{
+        flexDirection:"row",
+        justifyContent:"space-evenly"
     },
     list:{
        paddingVertical:10
